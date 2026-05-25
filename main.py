@@ -19,7 +19,7 @@ def login():
                     json = {
                         "username" : username,
                         "password" : password
-                    })
+                    }, timeout=5)
         
         if response.status_code == 200:  # Successful login
             return f"Login Successful for {response.json().get('role')}"
