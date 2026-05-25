@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect
 import requests
 
 app = Flask(__name__)
@@ -8,6 +8,10 @@ URL = "https://sharmaji.pythonanywhere.com"
 @app.route("/")
 def home():
     return render_template("index.html")
+
+@app.route("/student")
+def student():
+    return render_template("student.html")
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -22,7 +26,12 @@ def login():
                     }, timeout=5)
         
         if response.status_code == 200:  # Successful login
-            return f"Login Successful for {response.json().get('role')}"
+            if response.json().get('role') == 'admin':
+                return redirect("/admin")  # Redirect to admin dashboard
+            elif response.json().get('role') == 'student':
+                return redirect("/student")  # Redirect to student dashboard
+            else:
+                return redirect("/staff")  # Redirect to staff dashboard
         
         if response.status_code == 401:  # Invalid credentials
             return "Invalid username or password. Please try again."
