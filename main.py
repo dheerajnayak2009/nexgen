@@ -29,7 +29,7 @@ def login():
         
         if response.status_code == 400: # Missing fields(empty data sent to sharmaji)
             return "Please fill in all the fields."
-        
+            
     return render_template("login.html")
 
 # --- IF LOCAL, THEN UNCOMMENT THIS ---
