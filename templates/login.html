@@ -262,6 +262,10 @@
                 font-size: 0.95rem;
             }
         }
+        .error-text {
+            color: #ff6b6b;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -274,7 +278,9 @@
                 <div class="login-logo-icon"></div>
                 <span>NexGen Academy</span>
             </div>
-            <p class="login-subtitle">Log in to your dashboard</p>
+            <p class="login-subtitle {% if error %}error-text{% endif %}">
+                {{ error if error else "Log in to your dashboard" }}
+            </p>
 
             <!-- Login Form -->
             <form method="POST" action="/login">
