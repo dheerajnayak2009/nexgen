@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register Student</title>
+</head>
+<body>
+
+    <h1>Register Student</h1>
+
+    {% if error %}
+        <p style="color:red;">{{ error }}</p>
+    {% endif %}
+
+    {% if success %}
+        <p style="color:green;">{{ success }}</p>
+    {% endif %}
+
+    <form method="POST">
+
+        <input type="text" name="username" placeholder="Username" required>
+        <br><br>
+
+        <input type="password" name="password" placeholder="Password" required>
+        <br><br>
+
+        <input type="text" name="first_name" placeholder="First Name" required>
+        <br><br>
+
+        <input type="text" name="last_name" placeholder="Last Name">
+        <br><br>
+
+        <input type="text" name="roll_number" placeholder="Roll Number" required>
+        <br><br>
+
+        <input type="number" name="batch_id" placeholder="Batch ID">
+        <br><br>
+
+        <input type="email" name="email" placeholder="Email">
+        <br><br>
+
+        <input type="text" name="student_phone" placeholder="Student Phone">
+        <br><br>
+
+        <input type="text" name="parent_phone" placeholder="Parent Phone">
+        <br><br>
+
+        <input type="text" name="stream" placeholder="Stream" required>
+        <br><br>
+
+        <input type="number" name="target_year" placeholder="Target Year" required>
+        <br><br>
+
+        <button type="submit">
+            Register Student
+        </button>
+
+    </form>
+
+</body>
+</html>

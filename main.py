@@ -138,6 +138,54 @@ def logout():
 
     return redirect("/login")
 
+# =========================
+# ADMIN: REGISTER STUDENT   
+# =========================
+@app.route("/admin/register-student", methods=["GET", "POST"])
+def register_student():
+
+    # Admin protection
+    if "role" not in session:
+        return redirect("/login")
+
+    if session["role"] != "admin":
+        return redirect("/login")
+
+    error = None
+    success = None
+
+    if request.method == "POST":
+
+        response = requests.post(
+            f"{URL}/register_student",
+            json={
+                "username": request.form.get("username"),
+                "password": request.form.get("password"),
+                "first_name": request.form.get("first_name"),
+                "last_name": request.form.get("last_name"),
+                "roll_number": request.form.get("roll_number"),
+                "batch_id": request.form.get("batch_id"),
+                "email": request.form.get("email"),
+                "student_phone": request.form.get("student_phone"),
+                "parent_phone": request.form.get("parent_phone"),
+                "stream": request.form.get("stream"),
+                "target_year": request.form.get("target_year")
+            },
+            timeout=5
+        )
+
+        if response.status_code == 201:
+            success = "Student registered successfully"
+
+        else:
+            error = response.json().get("error")
+
+    return render_template(
+        "register_student.html",
+        error=error,
+        success=success
+    )
+
 
 # =========================
 # RUN LOCALLY
