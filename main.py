@@ -267,8 +267,69 @@ def create_batch():
         existing_batches=existing_batches
     )
 
+@app.route("/admin/search-students")
+def search_students_page():
+
+    if "role" not in session:
+        return redirect("/login")
+
+    if session["role"] != "admin":
+        return redirect("/login")
+
+    return render_template("search_students.html")
+
+@app.route("/admin/student-profile/<username>")
+def student_profile(username):
+    # get some data
+    resp = requests.post(
+        f"{URL}/get_student_profile",
+        json={
+            "username": username
+        },
+        headers={"Authorization": f"Bearer {session.get('token')}"}
+    ).json()
+    first_name = resp.get("first_name")
+    last_name = resp.get("last_name")
+    roll_number = resp.get("roll_number")
+    batch_name = resp.get("batch_name")
+    email = resp.get("email")
+    student_phone = resp.get("student_phone")
+    parent_phone = resp.get("parent_phone")
+    stream = resp.get("stream")
+    target_year = resp.get("target_year")
+    gender = resp.get("gender")
+    return render_template(
+        "student_profile.html",
+        first_name=first_name,
+        last_name=last_name,
+        roll_number=roll_number,
+        batch_name=batch_name,
+        email=email,
+        student_phone=student_phone,
+        parent_phone=parent_phone,
+        stream=stream,
+        target_year=target_year
+    )
+    
+
+#     {
+#     "access": 1,
+#     "batch_id": 1,
+#     "email": "ddnayak103@gmail.com",
+#     "first_name": "DHEERAJ",
+#     "gender": "Male",
+#     "last_name": "NAYAK",
+#     "parent_phone": "911",
+#     "roll_number": "209",
+#     "stream": "PCMC",
+#     "student_phone": "911",
+#     "target_year": 2027,
+#     "username": "ddnayak"
+# }
+    
+
 # =========================
 # RUN LOCALLY
 # =========================
-# if __name__ == "__main__":
-#     app.run(debug=True)
+if __name__ == "__main__":
+    app.run(debug=True)
