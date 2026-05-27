@@ -98,12 +98,17 @@ def login():
 
         username = request.form.get("username")
         password = request.form.get("password")
+        
+        ip_address=request.remote_addr
+        user_agent=request.headers.get("User-Agent")
 
         response = requests.post(
             f"{URL}/login",
             json={
                 "username": username,
-                "password": password
+                "password": password,
+                "ip_address": ip_address,
+                "user_agent": user_agent
             },
             timeout=5
         )
