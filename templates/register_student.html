@@ -1,60 +1,511 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Register Student</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexGen Academy - Student Registration</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo.png') }}" type="image/x-icon">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Forum&family=Lexend:wght@100..900&display=swap');
+        
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #3730a3;
+            --primary-light: #818cf8;
+            --accent: #f59e0b;
+            --accent-light: #fbbf24;
+            --bg-light: #f8fafc;
+            --bg-white: #ffffff;
+            --text-dark: #1e293b;
+            --text-medium: #475569;
+            --text-light: #94a3b8;
+            --gradient-1: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #6366f1 100%);
+            --gradient-2: linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #4f46e5 100%);
+            --gradient-3: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1), 0 4px 10px rgba(0, 0, 0, 0.08);
+            --shadow-xl: 0 20px 50px rgba(0, 0, 0, 0.15), 0 8px 20px rgba(0, 0, 0, 0.1);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --radius-xl: 28px;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Lexend', 'Inter', system-ui, -apple-system, sans-serif;
+            color: var(--text-dark);
+            background: var(--bg-light);
+            line-height: 1.7;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+        }
+
+        /* ========== NAVIGATION ========== */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 16px 0;
+            transition: var(--transition);
+            background: rgba(30, 27, 75, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .navbar-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            font-size: 1.6rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: #fff;
+            transition: var(--transition);
+        }
+
+        .logo-icon {
+            width: 42px;
+            height: 42px;
+            background: url("{{ url_for('static', filename='logo.png') }}") center center;
+            background-size: contain;
+            background-repeat: no-repeat;
+            border-radius: var(--radius-sm);
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 36px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: var(--transition);
+            position: relative;
+            padding: 4px 0;
+        }
+
+        .nav-links a:hover {
+            color: #fff;
+        }
+
+        .btn-nav {
+            background: var(--accent);
+            color: #fff !important;
+            padding: 10px 22px !important;
+            border-radius: 50px;
+            font-weight: 600 !important;
+            transition: var(--transition);
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.35);
+        }
+
+        .btn-nav:hover {
+            background: var(--accent-light);
+            transform: translateY(-2px);
+        }
+
+        .btn-login {
+            background: var(--primary);
+            color: rgba(255, 255, 255, 0.9) !important;
+            padding: 10px 22px !important;
+            border-radius: 50px;
+            font-weight: 600 !important;
+        }
+
+        /* Mobile */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 8px;
+        }
+        .hamburger span {
+            width: 26px;
+            height: 3px;
+            background: #fff;
+            border-radius: 3px;
+            transition: var(--transition);
+        }
+        @media (max-width: 768px) {
+            .nav-links {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 280px;
+                height: 100vh;
+                background: #fff;
+                flex-direction: column;
+                padding: 90px 30px 30px;
+                gap: 20px;
+                box-shadow: var(--shadow-xl);
+                transition: var(--transition-slow);
+                z-index: 1000;
+            }
+            .nav-links.active {
+                right: 0;
+            }
+            .nav-links a {
+                color: var(--text-dark) !important;
+            }
+            .hamburger {
+                display: flex;
+            }
+        }
+
+        /* ========== FORM CONTAINER ========== */
+        .form-container {
+            max-width: 700px;
+            margin: 120px auto 80px;
+            padding: 48px 40px;
+            background: var(--bg-white);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-xl);
+            border: 1px solid rgba(79, 70, 229, 0.1);
+            transition: var(--transition);
+        }
+
+        .form-container h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .form-subtitle {
+            color: var(--text-medium);
+            font-size: 0.9rem;
+            margin-bottom: 32px;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 16px;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+            letter-spacing: 0.3px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 14px 18px;
+            font-family: 'Lexend', sans-serif;
+            font-size: 0.95rem;
+            border: 2px solid #e2e8f0;
+            border-radius: var(--radius-md);
+            transition: var(--transition);
+            background: var(--bg-white);
+            color: var(--text-dark);
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .error {
+            background: #fef2f2;
+            color: #dc2626;
+            padding: 12px 18px;
+            border-radius: var(--radius-md);
+            margin-bottom: 24px;
+            font-size: 0.85rem;
+            border-left: 4px solid #dc2626;
+            font-weight: 500;
+        }
+
+        .success {
+            background: #ecfdf5;
+            color: #059669;
+            padding: 12px 18px;
+            border-radius: var(--radius-md);
+            margin-bottom: 24px;
+            font-size: 0.85rem;
+            border-left: 4px solid #059669;
+            font-weight: 500;
+        }
+
+        button[type="submit"] {
+            background: var(--gradient-1);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-size: 1rem;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+            letter-spacing: 0.5px;
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
+        }
+
+        button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(79, 70, 229, 0.4);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 640px) {
+            .form-container {
+                margin: 100px 20px 60px;
+                padding: 32px 24px;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+            .form-container h1 {
+                font-size: 1.6rem;
+            }
+        }
+
+        /* Footer */
+        .footer {
+            background: #0f0d1f;
+            color: #cbd5e1;
+            padding: 40px 24px 30px;
+            margin-top: 60px;
+        }
+        .footer-bottom {
+            max-width: 1200px;
+            margin: 0 auto;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 24px;
+            text-align: center;
+            font-size: 0.82rem;
+            color: #64748b;
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 20px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.85rem;
+            transition: var(--transition);
+        }
+        .back-link:hover {
+            color: var(--accent);
+            gap: 12px;
+        }
+    </style>
 </head>
 <body>
 
-    <h1>Register Student</h1>
+    <!-- ==================== NAVIGATION ==================== -->
+    <nav class="navbar" id="navbar">
+        <div class="navbar-inner">
+            <a href="/" class="logo">
+                <span class="logo-icon"></span> NexGen Academy
+            </a>
+            <div class="nav-links" id="navLinks">
+                <a href="/">Home</a>
+                <a href="/admin">Admin Dashboard</a>
+                <a href="/logout" class="btn-nav">Logout</a>
+            <button class="hamburger" id="hamburger" aria-label="Menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
 
-    {% if error %}
-        <p style="color:red;">{{ error }}</p>
-    {% endif %}
+    <!-- ==================== REGISTRATION FORM ==================== -->
+    <div class="form-container">
+        <h1>Register Student</h1>
+        <div class="form-subtitle">Enter Student Details</div>
 
-    {% if success %}
-        <p style="color:green;">{{ success }}</p>
-    {% endif %}
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
 
-    <form method="POST">
+        {% if success %}
+            <div class="success">{{ success }}</div>
+        {% endif %}
 
-        <input type="text" name="username" placeholder="Username" required>
-        <br><br>
+        <form method="POST">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>First Name *</label>
+                    <input type="text" name="first_name" placeholder="First Name" required>
+                </div>
+                <div class="form-group">
+                    <label>Last Name</label>
+                    <input type="text" name="last_name" placeholder="Last Name">
+                </div>
+            </div>
 
-        <input type="password" name="password" placeholder="Password" required>
-        <br><br>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Username *</label>
+                    <input type="text" name="username" placeholder="Username" required>
+                </div>
+                <div class="form-group">
+                    <label>Password *</label>
+                    <input type="password" name="password" placeholder="Password" required>
+                </div>
+            </div>
 
-        <input type="text" name="first_name" placeholder="First Name" required>
-        <br><br>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Roll Number *</label>
+                    <input type="text" name="roll_number" placeholder="Roll Number" required>
+                </div>
+                <div class="form-group">
+                    <label>Stream *</label>
+                    <input type="text" name="stream" placeholder="Stream (e.g., Science, Commerce)" required>
+                </div>
+            </div>
 
-        <input type="text" name="last_name" placeholder="Last Name">
-        <br><br>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Gender *</label>
+                    <select name="gender" required>
+                        <option value="">Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Select Batch *</label>
+                    <select name="batch_name" id="batchDropdown" required>
+                        <option value="">Loading batches...</option>
+                    </select>
+                </div>
+                
+            </div>
+            
 
-        <input type="text" name="roll_number" placeholder="Roll Number" required>
-        <br><br>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" name="email" placeholder="Email Address">
+            </div>
 
-        <input type="number" name="batch_id" placeholder="Batch ID">
-        <br><br>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Student Phone</label>
+                    <input type="text" name="student_phone" placeholder="Student Phone Number">
+                </div>
+                <div class="form-group">
+                    <label>Parent Phone</label>
+                    <input type="text" name="parent_phone" placeholder="Parent Phone Number">
+                </div>
+            </div>
 
-        <input type="email" name="email" placeholder="Email">
-        <br><br>
+            <div class="form-group">
+                <label>Target Year *</label>
+                <input type="number" name="target_year" placeholder="e.g., 2026" required>
+            </div>
 
-        <input type="text" name="student_phone" placeholder="Student Phone">
-        <br><br>
+            <button type="submit">🚀 Register Student</button>
+        </form>
 
-        <input type="text" name="parent_phone" placeholder="Parent Phone">
-        <br><br>
+        <a href="/admin" class="back-link">Back to Dashboard</a>
+    </div>
 
-        <input type="text" name="stream" placeholder="Stream" required>
-        <br><br>
+    <!-- ==================== FOOTER ==================== -->
+    <footer class="footer">
+        <div class="footer-bottom">
+            &copy; 2026 NexGen Academy. All rights reserved. Empowering future leaders.
+        </div>
+    </footer>
 
-        <input type="number" name="target_year" placeholder="Target Year" required>
-        <br><br>
+    <script>
+        // Navbar scroll effect (keep consistent)
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 20) {
+                navbar.style.background = 'rgba(30, 27, 75, 0.98)';
+                navbar.style.backdropFilter = 'blur(20px)';
+            } else {
+                navbar.style.background = 'rgba(30, 27, 75, 0.95)';
+            }
+        });
 
-        <button type="submit">
-            Register Student
-        </button>
+        // Mobile hamburger
+        const hamburger = document.getElementById('hamburger');
+        const navLinks = document.getElementById('navLinks');
+        if (hamburger) {
+            hamburger.addEventListener('click', () => {
+                navLinks.classList.toggle('active');
+            });
+            navLinks.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    navLinks.classList.remove('active');
+                });
+            });
+        }
 
-    </form>
-
+        // Load batches from API
+        async function loadBatches() {
+            try {
+                const response = await fetch("https://sharmaji.pythonanywhere.com/get_batches");
+                const batches = await response.json();
+                const dropdown = document.getElementById("batchDropdown");
+                if (!dropdown) return;
+                dropdown.innerHTML = '<option value="">Select Batch</option>';
+                batches.forEach(batch => {
+                    const option = document.createElement("option");
+                    option.value = batch.batch_name;
+                    option.textContent = `${batch.batch_name} (${batch.course})`;
+                    dropdown.appendChild(option);
+                });
+            } catch (error) {
+                console.error("Failed to load batches:", error);
+                const dropdown = document.getElementById("batchDropdown");
+                if (dropdown) dropdown.innerHTML = '<option value="">Failed to load batches</option>';
+            }
+        }
+        loadBatches();
+    </script>
 </body>
 </html>

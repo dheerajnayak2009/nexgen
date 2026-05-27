@@ -164,12 +164,14 @@ def register_student():
                 "first_name": request.form.get("first_name"),
                 "last_name": request.form.get("last_name"),
                 "roll_number": request.form.get("roll_number"),
-                "batch_id": request.form.get("batch_id"),
+                "batch_name": request.form.get("batch_name"),
                 "email": request.form.get("email"),
                 "student_phone": request.form.get("student_phone"),
                 "parent_phone": request.form.get("parent_phone"),
                 "stream": request.form.get("stream"),
-                "target_year": request.form.get("target_year")
+                "target_year": request.form.get("target_year"),
+                "gender": request.form.get("gender"),
+                "current_role": session["role"]
             },
             timeout=5
         )
@@ -186,6 +188,45 @@ def register_student():
         success=success
     )
 
+@app.route("/admin/create-batch", methods=["GET", "POST"])
+def create_batch():
+
+    # Admin protection
+    if "role" not in session:
+        return redirect("/login")
+
+    if session["role"] != "admin":
+        return redirect("/login")
+
+    error = None
+    success = None
+
+    if request.method == "POST":
+
+        response = requests.post(
+            f"{URL}/add_batch",
+            json={
+                "batch_name": request.form.get("batch_name"),
+                "course": request.form.get("course"),
+                "year": request.form.get("year")
+            },
+            timeout=5
+        )
+
+        if response.status_code == 201:
+            success = "Batch created successfully"
+
+        else:
+            error = response.json().get("error")    
+    
+    existing_batches = requests.get(f"{URL}/get_batches").json()
+
+    return render_template(
+        "create_batch.html",
+        error=error,
+        success=success,
+        existing_batches=existing_batches
+    )
 
 # =========================
 # RUN LOCALLY
