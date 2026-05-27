@@ -114,13 +114,14 @@ def login():
         if response.status_code == 200:
 
             role = response.json().get("role")
-            
 
             # Create session
             session["username"] = username
             session["role"] = role
 
             if role == "admin":
+                token = response.json().get("access_token")
+                session["token"] = token
                 return redirect("/admin")
 
             elif role == "student":
@@ -207,9 +208,10 @@ def register_student():
                 "stream": request.form.get("stream"),
                 "target_year": request.form.get("target_year"),
                 "gender": request.form.get("gender"),
-                "current_role": session["role"]
+                # "current_role": session["role"]
             },
-            timeout=5
+            timeout=5, 
+            headers={"Authorization": f"Bearer {session.get('token')}"}
         )
 
         if response.status_code == 201:
@@ -246,7 +248,8 @@ def create_batch():
                 "course": request.form.get("course"),
                 "year": request.form.get("year")
             },
-            timeout=5
+            timeout=5,
+            headers={"Authorization": f"Bearer {session.get('token')}"}
         )
 
         if response.status_code == 201:
