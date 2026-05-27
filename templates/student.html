@@ -402,7 +402,7 @@
                 <span class="logo-icon"></span> NexGen Academy
             </a>
             <div class="user-menu">
-                <span class="user-greeting">👋 Welcome, Riya</span>
+                <span class="user-greeting">👋 Welcome, {{ first_name }}</span>
                 <a href="/logout" class="btn-logout">Logout</a>
             </div>
         </div>
@@ -497,43 +497,39 @@
                 <div class="profile-details">
                     <div class="detail-item">
                         <div class="detail-label">First Name</div>
-                        <div class="detail-value">Riya</div>
+                        <div class="detail-value">{{ first_name }}</div>
                     </div>
                     <div class="detail-item">
                         <div class="detail-label">Last Name</div>
-                        <div class="detail-value">Sharma</div>
+                        <div class="detail-value">{{ last_name }}</div>
                     </div>
                     <div class="detail-item">
                         <div class="detail-label">Roll Number</div>
-                        <div class="detail-value">NGA2026-0142</div>
+                        <div class="detail-value">{{ roll_number }}</div>
                     </div>
                     <div class="detail-item">
                         <div class="detail-label">Batch</div>
-                        <div class="detail-value">JEE Advanced 2026 - A1</div>
+                        <div class="detail-value">{{ batch_name }}</div>
                     </div>
                     <div class="detail-item">
                         <div class="detail-label">Email</div>
-                        <div class="detail-value">riya.s@nexgen.edu</div>
+                        <div class="detail-value">{{ email }}</div>
                     </div>
                     <div class="detail-item">
                         <div class="detail-label">Student Phone</div>
-                        <div class="detail-value">+91 98765 43210</div>
+                        <div class="detail-value">{{ student_phone }}</div>
                     </div>
                     <div class="detail-item">
                         <div class="detail-label">Parent Phone</div>
-                        <div class="detail-value">+91 98765 43211</div>
+                        <div class="detail-value">{{ parent_phone }}</div>
                     </div>
                     <div class="detail-item">
                         <div class="detail-label">Stream</div>
-                        <div class="detail-value">PCM (Physics, Chemistry, Math)</div>
+                        <div class="detail-value">{{ stream }}</div>
                     </div>
                     <div class="detail-item">
                         <div class="detail-label">Target Year</div>
-                        <div class="detail-value">2026</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="detail-label">Access Level</div>
-                        <div class="detail-value">Full Access</div>
+                        <div class="detail-value">{{ target_year }}</div>
                     </div>
                 </div>
             </div>

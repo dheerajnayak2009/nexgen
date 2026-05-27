@@ -27,8 +27,21 @@ def student():
     # Wrong role
     if session["role"] != "student":
         return redirect("/login")
+    
 
-    return render_template("student.html")
+    return render_template("student.html",
+                            first_name=session.get("first_name"),
+                            last_name=session.get("last_name"),
+                            roll_number=session.get("roll_number"),
+                            email=session.get("email"),
+                            student_phone=session.get("student_phone"),
+                            parent_phone=session.get("parent_phone"),
+                            stream=session.get("stream"),
+                            target_year=session.get("target_year"),
+                            gender=session.get("gender"),
+                            username=session.get("username"),
+                            batch_name=session.get("batch_name")
+                           )
 
 
 # =========================
@@ -101,6 +114,7 @@ def login():
         if response.status_code == 200:
 
             role = response.json().get("role")
+            
 
             # Create session
             session["username"] = username
@@ -110,6 +124,28 @@ def login():
                 return redirect("/admin")
 
             elif role == "student":
+                
+                first_name = response.json().get("first_name")
+                last_name = response.json().get("last_name")
+                roll_number = response.json().get("roll_number")
+                email = response.json().get("email")
+                batch_name = response.json().get("batch_name")
+                student_phone = response.json().get("student_phone")
+                parent_phone = response.json().get("parent_phone")
+                stream = response.json().get("stream")
+                target_year = response.json().get("target_year")
+                gender = response.json().get("gender")
+
+                session["first_name"] = first_name
+                session["last_name"] = last_name
+                session["roll_number"] = roll_number
+                session["email"] = email
+                session["student_phone"] = student_phone
+                session["parent_phone"] = parent_phone
+                session["stream"] = stream
+                session["target_year"] = target_year
+                session["gender"] = gender
+                session["batch_name"] = batch_name
                 return redirect("/student")
 
             else:
