@@ -283,7 +283,7 @@
             </p>
 
             <!-- Login Form -->
-            <form method="POST" action="/login" onsubmit="login(event)">
+            <form method="POST" action="/login">
                 <div class="form-group">
                     <label for="username">Username</label>
                     <div class="input-wrap">
@@ -311,77 +311,6 @@
             </div>
         </div>
     </div>
-
-<script>
-async function login(event) {
-
-    event.preventDefault();
-
-    const payload = {
-        username: document.getElementById("username").value,
-        password: document.getElementById("password").value,
-
-        fingerprint: {
-            screen_resolution: `${screen.width}x${screen.height}`,
-            viewport: `${window.innerWidth}x${window.innerHeight}`,
-
-            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-            timezone_offset: new Date().getTimezoneOffset(),
-
-            language: navigator.language,
-            languages: navigator.languages,
-
-            platform: navigator.platform,
-
-            cpu_cores: navigator.hardwareConcurrency,
-            device_memory: navigator.deviceMemory,
-
-            touch_points: navigator.maxTouchPoints,
-
-            cookies_enabled: navigator.cookieEnabled,
-            online_status: navigator.onLine,
-
-            connection_type:
-                navigator.connection?.effectiveType || null,
-
-            device_pixel_ratio: window.devicePixelRatio,
-
-            local_storage: !!window.localStorage,
-            session_storage: !!window.sessionStorage,
-
-            do_not_track: navigator.doNotTrack
-        }
-    };
-
-    const response = await fetch("/login", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
-    });
-
-    const data = await response.json();
-
-if (response.ok) {
-
-    if (data.role === "admin") {
-        window.location.href = "/admin";
-    }
-
-    else if (data.role === "student") {
-        window.location.href = "/student";
-    }
-
-    else {
-        window.location.href = "/staff";
-    }
-
-} else {
-    alert(data.error || "Login failed");
-}
-}
-</script>
 
 </body>
 </html>

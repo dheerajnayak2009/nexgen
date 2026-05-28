@@ -96,41 +96,23 @@ def login():
 
     if request.method == "POST":
 
-        data = request.get_json(silent=True) or {}
-
-        username = data.get("username")
-        password = data.get("password")
-
-        fingerprint = data.get("fingerprint", {})
-
-        ip_address = request.headers.get("X-Forwarded-For", request.remote_addr)
-        user_agent = request.headers.get("User-Agent")
+        username = request.form.get("username")
+        password = request.form.get("password")
+        
+        ip_address=request.remote_addr
+        user_agent=request.headers.get("User-Agent")
 
         response = requests.post(
-        f"{URL}/login",
-        json={
-            "username": username,
-            "password": password,
+            f"{URL}/login",
+            json={
+                "username": username,
+                "password": password,
+                "ip_address": ip_address,
+                "user_agent": user_agent
+            },
+            timeout=5
+        )
 
-            "ip_address": ip_address,
-            "forwarded_for": request.headers.get("X-Forwarded-For"),
-            "host": request.headers.get("Host"),
-            "origin": request.headers.get("Origin"),
-            "referer": request.headers.get("Referer"),
-
-            "user_agent": user_agent,
-            "accept_language": request.headers.get("Accept-Language"),
-            "sec_ch_ua": request.headers.get("Sec-CH-UA"),
-            "sec_ch_platform": request.headers.get("Sec-CH-UA-Platform"),
-            "sec_ch_mobile": request.headers.get("Sec-CH-UA-Mobile"),
-
-            "method": request.method,
-            "path": request.path,
-
-            "fingerprint": fingerprint
-        },
-        timeout=5
-    )
         # =========================
         # SUCCESSFUL LOGIN
         # =========================
@@ -138,29 +120,42 @@ def login():
 
             role = response.json().get("role")
 
+            # Create session
             session["username"] = username
             session["role"] = role
 
             if role == "admin":
-                session["token"] = response.json().get("access_token")
+                token = response.json().get("access_token")
+                session["token"] = token
+                return redirect("/admin")
 
             elif role == "student":
+                
+                first_name = response.json().get("first_name")
+                last_name = response.json().get("last_name")
+                roll_number = response.json().get("roll_number")
+                email = response.json().get("email")
+                batch_name = response.json().get("batch_name")
+                student_phone = response.json().get("student_phone")
+                parent_phone = response.json().get("parent_phone")
+                stream = response.json().get("stream")
+                target_year = response.json().get("target_year")
+                gender = response.json().get("gender")
 
-                session["first_name"] = response.json().get("first_name")
-                session["last_name"] = response.json().get("last_name")
-                session["roll_number"] = response.json().get("roll_number")
-                session["email"] = response.json().get("email")
-                session["student_phone"] = response.json().get("student_phone")
-                session["parent_phone"] = response.json().get("parent_phone")
-                session["stream"] = response.json().get("stream")
-                session["target_year"] = response.json().get("target_year")
-                session["gender"] = response.json().get("gender")
-                session["batch_name"] = response.json().get("batch_name")
+                session["first_name"] = first_name
+                session["last_name"] = last_name
+                session["roll_number"] = roll_number
+                session["email"] = email
+                session["student_phone"] = student_phone
+                session["parent_phone"] = parent_phone
+                session["stream"] = stream
+                session["target_year"] = target_year
+                session["gender"] = gender
+                session["batch_name"] = batch_name
+                return redirect("/student")
 
-            return {
-                "success": True,
-                "role": role
-            }, 200
+            else:
+                return redirect("/staff")
 
         # =========================
         # INVALID LOGIN
