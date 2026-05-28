@@ -99,17 +99,62 @@ def login():
         username = request.form.get("username")
         password = request.form.get("password")
         
-        ip_address=request.remote_addr
+        ip_address = request.headers.get("X-Forwarded-For", request.remote_addr)
         user_agent=request.headers.get("User-Agent")
 
-        response = requests.post(
-            f"{URL}/login",
+        response = requests.post(f"{URL}/login",
             json={
-                "username": username,
-                "password": password,
-                "ip_address": ip_address,
-                "user_agent": user_agent
-            },
+                    "username": username,
+                    "password": password,
+
+                    # Network info
+                    "ip_address": ip_address,
+                    "forwarded_for": request.headers.get("X-Forwarded-For"),
+                    "host": request.headers.get("Host"),
+                    "origin": request.headers.get("Origin"),
+                    "referer": request.headers.get("Referer"),
+
+                    # Browser / client info
+                    "user_agent": user_agent,
+                    "accept_language": request.headers.get("Accept-Language"),
+                    "sec_ch_ua": request.headers.get("Sec-CH-UA"),
+                    "sec_ch_platform": request.headers.get("Sec-CH-UA-Platform"),
+                    "sec_ch_mobile": request.headers.get("Sec-CH-UA-Mobile"),
+
+                    # Request metadata
+                    "method": request.method,
+                    "path": request.path,
+
+                    # Optional frontend fingerprint object
+                    "fingerprint": {
+                        "screen_resolution": request.json.get("fingerprint", {}).get("screen_resolution"),
+                        "viewport": request.json.get("fingerprint", {}).get("viewport"),
+                        "timezone": request.json.get("fingerprint", {}).get("timezone"),
+                        "timezone_offset": request.json.get("fingerprint", {}).get("timezone_offset"),
+
+                        "language": request.json.get("fingerprint", {}).get("language"),
+                        "languages": request.json.get("fingerprint", {}).get("languages"),
+
+                        "platform": request.json.get("fingerprint", {}).get("platform"),
+
+                        "cpu_cores": request.json.get("fingerprint", {}).get("cpu_cores"),
+                        "device_memory": request.json.get("fingerprint", {}).get("device_memory"),
+
+                        "touch_points": request.json.get("fingerprint", {}).get("touch_points"),
+
+                        "cookies_enabled": request.json.get("fingerprint", {}).get("cookies_enabled"),
+                        "online_status": request.json.get("fingerprint", {}).get("online_status"),
+
+                        "connection_type": request.json.get("fingerprint", {}).get("connection_type"),
+
+                        "device_pixel_ratio": request.json.get("fingerprint", {}).get("device_pixel_ratio"),
+
+                        "local_storage": request.json.get("fingerprint", {}).get("local_storage"),
+                        "session_storage": request.json.get("fingerprint", {}).get("session_storage"),
+
+                        "do_not_track": request.json.get("fingerprint", {}).get("do_not_track")
+                    }
+                },
             timeout=5
         )
 
