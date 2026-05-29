@@ -231,6 +231,64 @@ def register_student():
         success=success
     )
 
+# =========================
+# ADMIN: REGISTER STAFF (NEW ROUTE)
+# =========================
+@app.route("/admin/register-staff", methods=["GET", "POST"])
+def register_staff():
+
+    # Admin protection
+    if "role" not in session:
+        return redirect("/login")
+
+    if session["role"] != "admin":
+        return redirect("/login")
+
+    error = None
+    success = None
+
+    if request.method == "POST":
+
+        # Prepare the payload for the API
+        payload = {
+            "username": request.form.get("username"),
+            "password": request.form.get("password"),
+            "first_name": request.form.get("first_name"),
+            "email": request.form.get("email"),
+            "phone": request.form.get("phone"),
+            "department": request.form.get("department"),
+            "designation": request.form.get("designation"),
+        }
+        
+        # Add last_name only if provided
+        last_name = request.form.get("last_name")
+        if last_name:
+            payload["last_name"] = last_name
+
+        # Make API request to register staff
+        response = requests.post(
+            f"{URL}/register_staff",
+            json=payload,
+            timeout=10,
+            headers={"Authorization": f"Bearer {session.get('token')}"}
+        )
+
+        if response.status_code == 201:
+            success = "Staff registered successfully! They can now log in with their credentials."
+        else:
+            # Handle different error responses
+            try:
+                error_data = response.json()
+                error = error_data.get("error", "Failed to register staff. Please check the information provided.")
+            except:
+                error = f"Failed to register staff. Status code: {response.status_code}"
+
+    return render_template(
+        "register_staff.html",
+        error=error,
+        success=success
+    )
+
 @app.route("/admin/create-batch", methods=["GET", "POST"])
 def create_batch():
 
@@ -336,5 +394,5 @@ def student_profile(username):
 # =========================
 # RUN LOCALLY
 # =========================
-# if __name__ == "__main__":
-#     app.run(debug=True)
+if __name__ == "__main__":
+    app.run(debug=True)
