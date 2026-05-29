@@ -3,9 +3,532 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>STAFF</title>
+    <title>Staff Dashboard | NexGen Academy</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo.png') }}" type="image/x-icon">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Forum&family=Lexend:wght@100..900&display=swap');
+
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #3730a3;
+            --primary-light: #818cf8;
+            --accent: #f59e0b;
+            --accent-light: #fbbf24;
+            --bg-light: #f8fafc;
+            --bg-white: #ffffff;
+            --text-dark: #1e293b;
+            --text-medium: #475569;
+            --text-light: #94a3b8;
+            --gradient-1: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #6366f1 100%);
+            --gradient-2: linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #4f46e5 100%);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1), 0 4px 10px rgba(0, 0, 0, 0.08);
+            --shadow-xl: 0 20px 50px rgba(0, 0, 0, 0.15), 0 8px 20px rgba(0, 0, 0, 0.1);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --radius-xl: 28px;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Lexend', 'Inter', system-ui, -apple-system, sans-serif;
+            color: var(--text-dark);
+            background: var(--bg-light);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: var(--gradient-2);
+            padding: 14px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow-md);
+        }
+
+        .navbar-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: #fff;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: url("{{ url_for('static', filename='logo.png') }}") center/contain no-repeat;
+            border-radius: var(--radius-sm);
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .user-greeting {
+            color: rgba(255,255,255,0.9);
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .btn-logout {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: #fff;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .btn-logout:hover {
+            background: rgba(255,255,255,0.25);
+            transform: translateY(-1px);
+        }
+
+        /* Main Container */
+        .main-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 24px;
+        }
+
+        /* Welcome Banner */
+        .welcome-banner {
+            background: var(--gradient-1);
+            border-radius: var(--radius-xl);
+            padding: 32px 36px;
+            margin-bottom: 40px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-banner::before {
+            content: '👥';
+            position: absolute;
+            right: 30px;
+            bottom: 10px;
+            font-size: 80px;
+            opacity: 0.15;
+        }
+
+        .welcome-banner h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .welcome-banner p {
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+
+        .role-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 4px 14px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 12px;
+        }
+
+        /* Tab Navigation */
+        .tab-nav {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 12px 28px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            border: none;
+            background: #fff;
+            color: var(--text-medium);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+
+        .tab-btn.active {
+            background: var(--gradient-1);
+            color: #fff;
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.35);
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: #f1f5f9;
+            transform: translateY(-1px);
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+            animation: fadeSlide 0.4s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeSlide {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Profile Card */
+        .profile-card {
+            background: #fff;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            border: 1px solid #f1f5f9;
+        }
+
+        .profile-header {
+            background: var(--gradient-1);
+            padding: 32px;
+            text-align: center;
+            color: white;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            margin: 0 auto 16px;
+            border: 3px solid white;
+        }
+
+        .profile-header h2 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .profile-header .designation {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .profile-body {
+            padding: 32px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        .info-item {
+            border-left: 3px solid var(--primary-light);
+            padding-left: 16px;
+        }
+
+        .info-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-light);
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .info-value {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            word-break: break-word;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+            margin-top: 32px;
+        }
+
+        .action-card {
+            background: #fff;
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            text-align: center;
+            text-decoration: none;
+            color: var(--text-dark);
+            transition: var(--transition);
+            border: 1px solid #f1f5f9;
+            display: block;
+        }
+
+        .action-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-light);
+        }
+
+        .action-icon {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+        }
+
+        .action-card h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .action-card p {
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+
+        /* Footer */
+        .footer {
+            background: #0f0d1f;
+            color: #cbd5e1;
+            padding: 40px 24px 30px;
+            margin-top: 60px;
+        }
+
+        .footer-bottom {
+            max-width: 1200px;
+            margin: 0 auto;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 24px;
+            text-align: center;
+            font-size: 0.82rem;
+            color: #64748b;
+        }
+
+        @media (max-width: 768px) {
+            .navbar-inner {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .user-menu {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            .welcome-banner {
+                padding: 24px;
+            }
+            .welcome-banner h1 {
+                font-size: 1.4rem;
+            }
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
-<body>  
-    <h1>YOU ARE NOT SUPPOSED TO BE HERE, GO BACK TO THE STUDENT DASHBOARD</h1>
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-inner">
+            <a href="/staff" class="logo">
+                <span class="logo-icon"></span> NexGen Academy
+            </a>
+            <div class="user-menu">
+                <span class="user-greeting">👋 Welcome, {{ first_name }}</span>
+                <a href="/logout" class="btn-logout">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        
+
+        <!-- Tab Navigation -->
+        <div class="tab-nav">
+            <button class="tab-btn active" data-tab="profile">👤 My Profile</button>
+            <button class="tab-btn" data-tab="resources">📚 Resources</button>
+            <button class="tab-btn" data-tab="schedule">📅 Schedule</button>
+        </div>
+
+        <!-- Profile Tab -->
+        <div id="profile" class="tab-content active">
+            <div class="profile-card">
+                <div class="profile-header">
+                    <div class="profile-avatar">
+                        {% set dept = department|lower %}
+                        {% if 'math' in dept %}📐
+                        {% elif 'phys' in dept %}⚛️
+                        {% elif 'chem' in dept %}🧪
+                        {% elif 'bio' in dept %}🔬
+                        {% elif 'comp' in dept or 'it' in dept %}💻
+                        {% elif 'eng' in dept %}📝
+                        {% elif 'admin' in dept or 'hr' in dept %}📊
+                        {% else %}👨‍🏫
+                        {% endif %}
+                    </div>
+                    <h2>{{ first_name }} {{ last_name or '' }}</h2>
+                    <div class="designation">{{ designation or 'Staff Member' }}</div>
+                </div>
+                <div class="profile-body">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label">Department</div>
+                            <div class="info-value">{{ department or '—' }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Designation</div>
+                            <div class="info-value">{{ designation or '—' }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Email Address</div>
+                            <div class="info-value">{{ email or '—' }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Phone Number</div>
+                            <div class="info-value">{{ phone or '—' }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Username</div>
+                            <div class="info-value">{{ username or '—' }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Status</div>
+                            <div class="info-value"><span class="status-badge status-active">✅ Active</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resources Tab -->
+        <div id="resources" class="tab-content">
+            <div class="quick-actions">
+                <a href="#" class="action-card">
+                    <div class="action-icon">📖</div>
+                    <h3>Teaching Materials</h3>
+                    <p>Access lesson plans and resources</p>
+                </a>
+                <a href="#" class="action-card">
+                    <div class="action-icon">📝</div>
+                    <h3>Create Test</h3>
+                    <p>Design assessments for students</p>
+                </a>
+                <a href="#" class="action-card">
+                    <div class="action-icon">👥</div>
+                    <h3>Student Reports</h3>
+                    <p>View student performance</p>
+                </a>
+                <a href="#" class="action-card">
+                    <div class="action-icon">📊</div>
+                    <h3>Analytics</h3>
+                    <p>Track class progress</p>
+                </a>
+            </div>
+        </div>
+
+        <!-- Schedule Tab -->
+        <div id="schedule" class="tab-content">
+            <div class="quick-actions">
+                <a href="#" class="action-card">
+                    <div class="action-icon">📅</div>
+                    <h3>My Timetable</h3>
+                    <p>View daily class schedule</p>
+                </a>
+                <a href="#" class="action-card">
+                    <div class="action-icon">⏰</div>
+                    <h3>Upcoming Meetings</h3>
+                    <p>Staff meetings and events</p>
+                </a>
+                <a href="#" class="action-card">
+                    <div class="action-icon">📌</div>
+                    <h3>Substitution</h3>
+                    <p>Request class substitution</p>
+                </a>
+                <a href="#" class="action-card">
+                    <div class="action-icon">📢</div>
+                    <h3>Announcements</h3>
+                    <p>School announcements</p>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-bottom">
+            &copy; 2026 NexGen Academy. All rights reserved. Empowering educators.
+        </div>
+    </footer>
+
+    <script>
+        // Tab switching
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetTab = btn.getAttribute('data-tab');
+
+                tabButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                tabContents.forEach(content => {
+                    content.classList.remove('active');
+                    if (content.id === targetTab) {
+                        content.classList.add('active');
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>

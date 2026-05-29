@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session
+from flask import Flask, render_template, request, redirect, session, jsonify
 import requests
 
 app = Flask(__name__)
@@ -9,9 +9,34 @@ app.secret_key = "your_secret_key_here"
 URL = "https://sharmaji.pythonanywhere.com"
 
 
-@app.route("/")
-def home():
-    return render_template("index.html")
+# Helper function to get real client IP address
+def get_client_ip():
+    """Get the real client IP address even behind proxies"""
+    # Check for X-Forwarded-For header (most common behind load balancers/proxies)
+    forwarded_for = request.headers.get('X-Forwarded-For')
+    if forwarded_for:
+        # X-Forwarded-For can contain multiple IPs (client, proxy1, proxy2)
+        # The first one is the original client IP
+        return forwarded_for.split(',')[0].strip()
+    
+    # Check for X-Real-IP header (common with nginx)
+    real_ip = request.headers.get('X-Real-IP')
+    if real_ip:
+        return real_ip
+    
+    # Fall back to remote_addr
+    return request.remote_addr
+
+
+# =========================
+# GET FINGERPRINT DATA FROM FRONTEND
+# =========================
+@app.route("/get-fingerprint-data", methods=["POST"])
+def get_fingerprint_data():
+    """Store fingerprint data in session for login use"""
+    data = request.json
+    session["fingerprint"] = data
+    return jsonify({"status": "ok"})
 
 
 # =========================
@@ -56,7 +81,15 @@ def staff():
     if session["role"] != "staff":
         return redirect("/login")
 
-    return render_template("staff.html")
+    return render_template("staff.html",
+                            first_name=session.get("first_name"),
+                            last_name=session.get("last_name"),
+                            email=session.get("email"),
+                            phone=session.get("phone"),
+                            department=session.get("department"),
+                            designation=session.get("designation"),
+                            username=session.get("username")
+                           )
 
 
 # =========================
@@ -99,18 +132,62 @@ def login():
         username = request.form.get("username")
         password = request.form.get("password")
         
-        ip_address=request.remote_addr
-        user_agent=request.headers.get("User-Agent")
+        # Get real client IP
+        ip_address = get_client_ip()
+        user_agent = request.headers.get("User-Agent")
+        
+        # Get fingerprint data from session (collected by frontend)
+        fingerprint = session.get("fingerprint", {})
+        
+        # Build complete request payload
+        payload = {
+            "username": username,
+            "password": password,
+            "ip_address": ip_address,
+            "user_agent": user_agent,
+            # HTTP headers
+            "forwarded_for": request.headers.get("X-Forwarded-For"),
+            "host": request.headers.get("Host"),
+            "origin": request.headers.get("Origin"),
+            "referer": request.headers.get("Referer"),
+            "accept_language": request.headers.get("Accept-Language"),
+            "sec_ch_ua": request.headers.get("Sec-Ch-Ua"),
+            "sec_ch_platform": request.headers.get("Sec-Ch-Ua-Platform"),
+            "sec_ch_mobile": request.headers.get("Sec-Ch-Ua-Mobile"),
+            "method": request.method,
+            "path": request.path,
+            # Fingerprint data from JavaScript
+            "screen_resolution": fingerprint.get("screen_resolution"),
+            "viewport": fingerprint.get("viewport"),
+            "timezone": fingerprint.get("timezone"),
+            "timezone_offset": fingerprint.get("timezone_offset"),
+            "language": fingerprint.get("language"),
+            "languages": fingerprint.get("languages"),
+            "platform": fingerprint.get("platform"),
+            "cpu_cores": fingerprint.get("cpu_cores"),
+            "device_memory": fingerprint.get("device_memory"),
+            "touch_points": fingerprint.get("touch_points"),
+            "cookies_enabled": fingerprint.get("cookies_enabled"),
+            "online_status": fingerprint.get("online_status"),
+            "connection_type": fingerprint.get("connection_type"),
+            "device_pixel_ratio": fingerprint.get("device_pixel_ratio"),
+            "local_storage": fingerprint.get("local_storage"),
+            "session_storage": fingerprint.get("session_storage"),
+            "do_not_track": fingerprint.get("do_not_track"),
+            "login_id": fingerprint.get("login_id"),
+            "request_id": fingerprint.get("request_id"),
+            "session_id": fingerprint.get("session_id"),
+            "device_id": fingerprint.get("device_id"),
+            "referrer_policy": fingerprint.get("referrer_policy")
+        }
+        
+        # Remove None values
+        payload = {k: v for k, v in payload.items() if v is not None}
 
         response = requests.post(
             f"{URL}/login",
-            json={
-                "username": username,
-                "password": password,
-                "ip_address": ip_address,
-                "user_agent": user_agent
-            },
-            timeout=5
+            json=payload,
+            timeout=10
         )
 
         # =========================
@@ -154,7 +231,21 @@ def login():
                 session["batch_name"] = batch_name
                 return redirect("/student")
 
-            else:
+            else:  # role == "staff"
+                # Store staff profile data in session
+                first_name = response.json().get("first_name")
+                last_name = response.json().get("last_name")
+                email = response.json().get("email")
+                phone = response.json().get("phone")
+                department = response.json().get("department")
+                designation = response.json().get("designation")
+                
+                session["first_name"] = first_name
+                session["last_name"] = last_name
+                session["email"] = email
+                session["phone"] = phone
+                session["department"] = department
+                session["designation"] = designation
                 return redirect("/staff")
 
         # =========================
@@ -166,6 +257,8 @@ def login():
         elif response.status_code == 400:
             error = "Please fill in all the fields."
 
+    # Clear fingerprint on GET request
+    session.pop("fingerprint", None)
     return render_template("login.html", error=error)
 
 
@@ -213,7 +306,6 @@ def register_student():
                 "stream": request.form.get("stream"),
                 "target_year": request.form.get("target_year"),
                 "gender": request.form.get("gender"),
-                # "current_role": session["role"]
             },
             timeout=5, 
             headers={"Authorization": f"Bearer {session.get('token')}"}
@@ -231,8 +323,9 @@ def register_student():
         success=success
     )
 
+
 # =========================
-# ADMIN: REGISTER STAFF (NEW ROUTE)
+# ADMIN: REGISTER STAFF
 # =========================
 @app.route("/admin/register-staff", methods=["GET", "POST"])
 def register_staff():
@@ -249,7 +342,6 @@ def register_staff():
 
     if request.method == "POST":
 
-        # Prepare the payload for the API
         payload = {
             "username": request.form.get("username"),
             "password": request.form.get("password"),
@@ -260,12 +352,10 @@ def register_staff():
             "designation": request.form.get("designation"),
         }
         
-        # Add last_name only if provided
         last_name = request.form.get("last_name")
         if last_name:
             payload["last_name"] = last_name
 
-        # Make API request to register staff
         response = requests.post(
             f"{URL}/register_staff",
             json=payload,
@@ -276,7 +366,6 @@ def register_staff():
         if response.status_code == 201:
             success = "Staff registered successfully! They can now log in with their credentials."
         else:
-            # Handle different error responses
             try:
                 error_data = response.json()
                 error = error_data.get("error", "Failed to register staff. Please check the information provided.")
@@ -289,10 +378,13 @@ def register_staff():
         success=success
     )
 
+
+# =========================
+# ADMIN: CREATE BATCH
+# =========================
 @app.route("/admin/create-batch", methods=["GET", "POST"])
 def create_batch():
 
-    # Admin protection
     if "role" not in session:
         return redirect("/login")
 
@@ -330,6 +422,10 @@ def create_batch():
         existing_batches=existing_batches
     )
 
+
+# =========================
+# ADMIN: SEARCH STUDENTS
+# =========================
 @app.route("/admin/search-students")
 def search_students_page():
 
@@ -341,14 +437,15 @@ def search_students_page():
 
     return render_template("search_students.html")
 
+
+# =========================
+# ADMIN: STUDENT PROFILE
+# =========================
 @app.route("/admin/student-profile/<username>")
 def student_profile(username):
-    # get some data
     resp = requests.post(
         f"{URL}/get_student_profile",
-        json={
-            "username": username
-        },
+        json={"username": username},
         headers={"Authorization": f"Bearer {session.get('token')}"}
     ).json()
     first_name = resp.get("first_name")
@@ -373,23 +470,64 @@ def student_profile(username):
         stream=stream,
         target_year=target_year
     )
-    
 
-#     {
-#     "access": 1,
-#     "batch_id": 1,
-#     "email": "ddnayak103@gmail.com",
-#     "first_name": "DHEERAJ",
-#     "gender": "Male",
-#     "last_name": "NAYAK",
-#     "parent_phone": "911",
-#     "roll_number": "209",
-#     "stream": "PCMC",
-#     "student_phone": "911",
-#     "target_year": 2027,
-#     "username": "ddnayak"
-# }
+
+# =========================
+# ADMIN: SEARCH STAFF
+# =========================
+@app.route("/admin/search-staff")
+def search_staff_page():
+
+    if "role" not in session:
+        return redirect("/login")
+
+    if session["role"] != "admin":
+        return redirect("/login")
+
+    return render_template("search_staff.html")
+
+
+# =========================
+# ADMIN: STAFF PROFILE
+# =========================
+@app.route("/admin/staff-profile/<username>")
+def staff_profile(username):
     
+    if "role" not in session:
+        return redirect("/login")
+    
+    if session["role"] != "admin":
+        return redirect("/login")
+    
+    try:
+        resp = requests.post(
+            f"{URL}/get_staff_profile",
+            json={"username": username},
+            headers={"Authorization": f"Bearer {session.get('token')}"}
+        ).json()
+        
+        first_name = resp.get("first_name")
+        last_name = resp.get("last_name")
+        email = resp.get("email")
+        phone = resp.get("phone")
+        department = resp.get("department")
+        designation = resp.get("designation")
+        is_active = resp.get("is_active", 1)
+        
+        return render_template(
+            "staff_profile.html",
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+            phone=phone,
+            department=department,
+            designation=designation,
+            is_active=is_active,
+            username=username
+        )
+    except Exception as e:
+        return redirect("/admin/search-staff")
+
 
 # =========================
 # RUN LOCALLY

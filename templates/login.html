@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>Login | NexGen Academy</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap');
 
@@ -119,8 +119,6 @@
             font-size: 1.4rem;
             font-weight: 900;
             color: #fff;
-            /* box-shadow: 0 4px 15px rgba(245, 158, 11, 0.45); */
-            /* If logo.png available, replace with: */
             background: url("{{ url_for('static', filename='logo.png') }}") center center;
             background-size: contain;
             background-repeat: no-repeat;
@@ -138,6 +136,11 @@
             color: rgba(255, 255, 255, 0.65);
             margin-bottom: 32px;
             letter-spacing: 0.3px;
+        }
+
+        .login-subtitle.error-text {
+            color: #ff6b6b;
+            font-weight: 600;
         }
 
         /* ========== FORM ========== */
@@ -222,6 +225,12 @@
             box-shadow: 0 6px 20px rgba(245, 158, 11, 0.35);
         }
 
+        .btn-login.loading {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         /* ========== FOOTER LINKS ========== */
         .login-footer {
             margin-top: 24px;
@@ -262,10 +271,6 @@
                 font-size: 0.95rem;
             }
         }
-        .error-text {
-            color: #ff6b6b;
-            font-weight: 600;
-        }
     </style>
 </head>
 <body>
@@ -283,7 +288,7 @@
             </p>
 
             <!-- Login Form -->
-            <form method="POST" action="/login">
+            <form method="POST" action="/login" id="loginForm">
                 <div class="form-group">
                     <label for="username">Username</label>
                     <div class="input-wrap">
@@ -300,7 +305,7 @@
                     </div>
                 </div>
 
-                <button type="submit" class="btn-login">Login</button>
+                <button type="submit" class="btn-login" id="loginBtn">Login</button>
             </form>
 
             <!-- Footer links -->
@@ -312,5 +317,101 @@
         </div>
     </div>
 
+    <script>
+        // Comprehensive fingerprint collection
+        async function collectFingerprint() {
+            const fingerprint = {
+                // Screen information
+                screen_resolution: `${screen.width}x${screen.height}`,
+                viewport: `${window.innerWidth}x${window.innerHeight}`,
+                device_pixel_ratio: window.devicePixelRatio || 1,
+                
+                // Timezone
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                timezone_offset: new Date().getTimezoneOffset(),
+                
+                // Language
+                language: navigator.language,
+                languages: navigator.languages ? JSON.stringify(navigator.languages) : null,
+                
+                // Platform
+                platform: navigator.platform,
+                
+                // Hardware
+                cpu_cores: navigator.hardwareConcurrency || null,
+                device_memory: navigator.deviceMemory || null,
+                touch_points: navigator.maxTouchPoints || 0,
+                
+                // Browser capabilities
+                cookies_enabled: navigator.cookieEnabled,
+                online_status: navigator.onLine,
+                do_not_track: navigator.doNotTrack,
+                
+                // Storage
+                local_storage: (typeof localStorage !== 'undefined'),
+                session_storage: (typeof sessionStorage !== 'undefined'),
+                
+                // Connection
+                connection_type: navigator.connection ? navigator.connection.effectiveType : null,
+                
+                // Generate unique IDs
+                login_id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                request_id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
+                session_id: `${Date.now()}-${Math.random().toString(36).substr(2, 16)}`,
+                
+                // Referrer
+                referrer: document.referrer || null
+            };
+            
+            // Add device ID from localStorage
+            let deviceId = localStorage.getItem('nexgen_device_id');
+            if (!deviceId) {
+                deviceId = `${Date.now()}-${Math.random().toString(36).substr(2, 16)}-${navigator.userAgent.length}`;
+                localStorage.setItem('nexgen_device_id', deviceId);
+            }
+            fingerprint.device_id = deviceId;
+            
+            return fingerprint;
+        }
+        
+        // Send fingerprint to server before login
+        const loginForm = document.getElementById('loginForm');
+        const loginBtn = document.getElementById('loginBtn');
+        
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Show loading state
+            loginBtn.classList.add('loading');
+            loginBtn.textContent = '⏳ Logging in...';
+            loginBtn.disabled = true;
+            
+            // Collect fingerprint data
+            const fingerprint = await collectFingerprint();
+            
+            try {
+                // Send fingerprint to server via fetch (async)
+                const response = await fetch('/get-fingerprint-data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(fingerprint)
+                });
+                
+                if (response.ok) {
+                    // Submit the form after fingerprint is sent
+                    loginForm.submit();
+                } else {
+                    // Still submit even if fingerprint fails
+                    loginForm.submit();
+                }
+            } catch (err) {
+                console.error('Fingerprint collection failed:', err);
+                // Still submit the form even if fingerprint collection fails
+                loginForm.submit();
+            }
+        });
+    </script>
 </body>
 </html>
