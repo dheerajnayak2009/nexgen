@@ -29,6 +29,14 @@ def get_client_ip():
 
 
 # =========================
+# HOME PAGE
+# =========================
+@app.route("/")
+def home():
+    return render_template("index.html")
+
+
+# =========================
 # GET FINGERPRINT DATA FROM FRONTEND
 # =========================
 @app.route("/get-fingerprint-data", methods=["POST"])
@@ -178,7 +186,7 @@ def login():
             "request_id": fingerprint.get("request_id"),
             "session_id": fingerprint.get("session_id"),
             "device_id": fingerprint.get("device_id"),
-            "referrer_policy": fingerprint.get("referrer_policy")
+            "referrer": fingerprint.get("referrer")
         }
         
         # Remove None values
@@ -272,6 +280,7 @@ def logout():
     session.clear()
 
     return redirect("/login")
+
 
 # =========================
 # ADMIN: REGISTER STUDENT   
@@ -532,5 +541,5 @@ def staff_profile(username):
 # =========================
 # RUN LOCALLY
 # =========================
-# if __name__ == "__main__":
-#     app.run(debug=True)
+if __name__ == "__main__":
+    app.run(debug=True)
